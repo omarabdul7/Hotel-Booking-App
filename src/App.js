@@ -7,6 +7,7 @@ import Bookings from './components/Bookings';
 import HotelDirectory from './components/HotelDirectory';
 import Management from './components/Management';
 import './App.css';
+import SignUp from './components/SignUp.js'; // Import the SignUp component
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/bookings" element={<Bookings />} />
             <Route path="/hotel-directory" element={<HotelDirectory />} />
             <Route path="/management" element={<Management />} />
+            <Route path="/signup" element={<SignUp />} /> {/* Add this line */}
             {/* Insert additional Routes here as needed */}
           </Routes>
         </main>
@@ -27,5 +29,6 @@ function App() {
     </Router>
   );
 }
+
 
 export default App;

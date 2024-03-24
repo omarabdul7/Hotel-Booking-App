@@ -16,7 +16,7 @@ const styles = {
     borderCollapse: 'collapse',
   },
   th: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#118ab2',
     color: 'white',
     padding: '8px',
   },

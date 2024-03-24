@@ -171,6 +171,48 @@ app.get("/hotels", (req, res) => {
     res.json(results);
   });
 });
+app.post("/customers", (req, res) => {
+  let { firstName, middleName, lastName, street, city, postalCode, email, phoneNumber, idType } = req.body;
+
+  // Format phone number
+  phoneNumber = phoneNumber.replace(/\D/g, ''); // Remove any non-numeric characters
+  if (phoneNumber.length === 10) { // Ensure the phone number is the correct length
+    phoneNumber = `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6)}`;
+  }
+
+  // Adjust idType value
+  if (idType === 'driverLicense') {
+    idType = "Driver's Licence";
+  }
+  
+  // Get current date and extract year, month, and day
+  const currentDate = new Date();
+  const registrationYear = currentDate.getFullYear();
+  const registrationMonth = currentDate.getMonth() + 1; // getMonth() returns 0-11, add 1 for 1-12
+  const registrationDay = currentDate.getDate();
+
+  // Added validation and logging for troubleshooting
+  if (!firstName || !lastName || !street || !city || !postalCode || !email || !phoneNumber || !idType) {
+    console.error('Missing required fields:', req.body);
+    return res.status(400).send('Missing required fields');
+  }
+
+  const query = `
+    INSERT INTO Customer (First_Name, Middle_Name, Last_Name, Street, City, Postal_Code, Email, PhoneNumber, ID_Type, Registration_Day, Registration_Month, Registration_Year)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const queryParams = [firstName, middleName, lastName, street, city, postalCode, email, phoneNumber, idType, registrationDay, registrationMonth, registrationYear];
+
+  db.query(query, queryParams, (error, results) => {
+    if (error) {
+      console.error('Error adding new customer:', error);
+      return res.status(500).send('Error adding new customer');
+    }
+    res.status(201).send({ message: 'New customer created', customerID: results.insertId });
+  });
+});
+
 
 // Start the server
 app.listen(3001, () => {
