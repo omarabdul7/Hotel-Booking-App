@@ -11,7 +11,8 @@ function SignUp() {
     postalCode: '',
     email: '',
     phoneNumber: '',
-    idType: ''
+    idType: '',
+    password: '', // Added password to the state
   });
 
   const handleChange = (e) => {
@@ -24,6 +25,8 @@ function SignUp() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Ensure you validate the password (e.g., check for minimum length) here or in your backend
 
     fetch('http://localhost:3001/customers', {
       method: 'POST',
@@ -71,6 +74,8 @@ function SignUp() {
           <option value="SSN">SSN</option>
         </select>
         
+        <input className="form-input" type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
+
         <div className="button-container">
           <button className="form-button" type="submit">Submit</button>
         </div>

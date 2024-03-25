@@ -6,8 +6,9 @@ import Search from './components/Search';
 import Bookings from './components/Bookings';
 import HotelDirectory from './components/HotelDirectory';
 import Management from './components/Management';
+import SignUp from './components/SignUp'; // Ensure this is correctly imported
+import BookingComponent from './components/BookingComponent'; // Import the BookingComponent
 import './App.css';
-import SignUp from './components/SignUp.js'; // Import the SignUp component
 
 function App() {
   return (
@@ -21,7 +22,8 @@ function App() {
             <Route path="/bookings" element={<Bookings />} />
             <Route path="/hotel-directory" element={<HotelDirectory />} />
             <Route path="/management" element={<Management />} />
-            <Route path="/signup" element={<SignUp />} /> {/* Add this line */}
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/book-room/:roomId" element={<BookingComponent />} /> {/* Add the booking route */}
             {/* Insert additional Routes here as needed */}
           </Routes>
         </main>
@@ -29,6 +31,5 @@ function App() {
     </Router>
   );
 }
-
 
 export default App;

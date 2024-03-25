@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Search() {
   const [rooms, setRooms] = useState([]);
@@ -10,7 +11,9 @@ function Search() {
   const [cities, setCities] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
-
+  const navigate = useNavigate();
+  
+  
   useEffect(() => {
     fetch('http://localhost:3001/countries')
       .then(response => response.json())
@@ -26,7 +29,7 @@ function Search() {
         .then(response => response.json())
         .then(data => {
           setCities(data);
-          setSelectedCity(''); // Optionally reset city selection
+          setSelectedCity(''); // Reset city selection
         })
         .catch(error => console.error('Error fetching cities:', error));
     } else {
@@ -35,6 +38,7 @@ function Search() {
     }
   }, [selectedCountry]);
 
+  
   const handleSearch = () => {
     if (!checkin || !checkout) {
       alert('Please select both check-in and check-out dates.');
@@ -55,72 +59,41 @@ function Search() {
     if (selectedCity) url.searchParams.append('city', selectedCity);
 
     fetch(url)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
+      .then(response => response.json())
       .then(data => {
         setRooms(data);
       })
-      .catch(error => {
-        console.error('Error fetching available rooms:', error);
-      });
+      .catch(error => console.error('Error fetching available rooms:', error));
   };
 
-  const containerStyle = {
-    padding: '20px',
-    maxWidth: '800px',
-    margin: '0 auto',
+  const handleBookRoom = (room) => {
+    console.log(room); // Log the room data
+    navigate(`/book-room/${room.Room_ID}`, {
+      state: {
+        selectedRoom: room,
+        checkinDate: checkin,
+        checkoutDate: checkout
+      }
+    });
   };
+  
+  
 
-  const buttonStyle = {
-    backgroundColor: '#007bff',
-    color: 'white',
-    padding: '10px 20px',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    marginBottom: '20px',
-  };
-
-  const inputStyle = {
-    padding: '10px',
-    margin: '0 10px 20px 0',
-    borderRadius: '5px',
-    border: '1px solid #ddd',
-    width: '150px',
-    display: 'inline-block'
-  };
-
-  const roomStyle = {
-    border: '1px solid #ddd',
-    borderRadius: '5px',
-    padding: '15px',
-    marginBottom: '10px',
-    backgroundColor: '#f9f9f9',
-  };
-
-  const titleStyle = {
-    textAlign: 'center',
-    color: '#333',
-  };
 
   return (
-    <div style={containerStyle}>
-      <h2 style={titleStyle}>Room Search</h2>
+    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+      <h2 style={{ textAlign: 'center', color: '#333' }}>Room Search</h2>
       <input
         type="date"
         value={checkin}
         onChange={e => setCheckin(e.target.value)}
-        style={inputStyle}
+        style={{ padding: '10px', margin: '0 10px 20px 0', borderRadius: '5px', border: '1px solid #ddd', width: '150px', display: 'inline-block' }}
       />
       <input
         type="date"
         value={checkout}
         onChange={e => setCheckout(e.target.value)}
-        style={inputStyle}
+        style={{ padding: '10px', margin: '0 10px 20px 0', borderRadius: '5px', border: '1px solid #ddd', width: '150px', display: 'inline-block' }}
       />
       <input
         type="number"
@@ -128,7 +101,7 @@ function Search() {
         value={capacity}
         onChange={e => setCapacity(e.target.value)}
         min="0"
-        style={inputStyle}
+        style={{ padding: '10px', margin: '0 10px 20px 0', borderRadius: '5px', border: '1px solid #ddd', width: '150px', display: 'inline-block' }}
       />
       <input
         type="number"
@@ -137,47 +110,49 @@ function Search() {
         onChange={e => setRating(e.target.value)}
         min="1"
         max="5"
-        style={inputStyle}
+        style={{ padding: '10px', margin: '0 10px 20px 0', borderRadius: '5px', border: '1px solid #ddd', width: '150px', display: 'inline-block' }}
       />
       <select
         value={selectedCountry}
         onChange={e => setSelectedCountry(e.target.value)}
-        style={inputStyle}
+        style={{ padding: '10px', margin: '0 10px 20px 0', borderRadius: '5px', border: '1px solid #ddd', width: '200px', display: 'inline-block' }}
       >
         <option value="">Select Country</option>
         {countries.map(country => (
-                 <option key={country} value={country}>{country}</option>
-                 ))}
-               </select>
-               <select
-                 value={selectedCity}
-                 onChange={e => setSelectedCity(e.target.value)}
-                 style={inputStyle}
-                 disabled={!selectedCountry} // Disable if no country is selected
-               >
-                 <option value="">Select City</option>
-                 {cities.map(city => (
-                   <option key={city} value={city}>{city}</option>
-                 ))}
-               </select>
-               <button onClick={handleSearch} style={buttonStyle}>
-                 Search Available Rooms
-               </button>
-               {rooms.length > 0 ? (
-                 rooms.map(room => (
-                   <div key={room.Room_ID} style={roomStyle}>
-                     <h3>{room.Name}</h3>
-                     <p>{room.Street}, {room.City}, {room.Country}</p>
-                     <p><strong>Price:</strong> ${room.Price}</p>
-                     <p><strong>Amenities:</strong> {room.Amenities}</p>
-                     <p><strong>Capacity:</strong> {room.Capacity}</p>
-                     {room.Sea_View === 1 && <p>Sea View</p>}
-                     {room.Mountain_View === 1 && <p>Mountain View</p>}
-                     {room.Extendable === 1 && <p>Extendable</p>}
-                   </div>
-                 ))
-               ) : (
-                 <p>No rooms found. Try adjusting your search criteria.</p>
+          <option key={country} value={country}>{country}</option>
+        ))}
+      </select>
+      <select
+        value={selectedCity}
+        onChange={e => setSelectedCity(e.target.value)}
+        style={{ padding: '10px', margin: '0 10px 20px 0', borderRadius: '5px', border: '1px solid #ddd', width: '200px', display: 'inline-block' }}
+        disabled={!selectedCountry}
+      >
+        <option value="">Select City</option>
+        {cities.map(city => (
+          <option key={city} value={city}>{city}</option>
+        ))}
+      </select>
+      <button onClick={handleSearch} style={{ backgroundColor: '#007bff', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer', marginBottom: '20px' }}>
+        Search Available Rooms
+      </button>
+      {rooms.length > 0 ? (
+        rooms.map(room => (
+          <div key={room.Room_ID} style={{ border: '1px solid #ddd', borderRadius: '5px', padding: '15px', marginBottom: '10px', backgroundColor: '#f9f9f9' }}>
+            <h3>{room.Name}</h3>
+            <p>{room.Street}, {room.City}, {room.Country}</p>
+            <p><strong>Price:</strong> ${room.Price}</p>
+            <p><strong>Amenities:</strong> {room.Amenities}</p>
+            <p><strong>Capacity:</strong> {room.Capacity}</p>
+            {room.Sea_View === 1 && <p>Sea View</p>}
+            {room.Mountain_View === 1 && <p>Mountain View</p>}
+            {room.Extendable === 1 && <p>Extendable</p>}
+            <button onClick={() => handleBookRoom(room)} style={{ backgroundColor: '#007bff', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Book</button>
+          </div>
+        ))
+      ) : (
+        <p>No rooms found. Try adjusting your search criteria.</p>
+
                )}
              </div>
            );

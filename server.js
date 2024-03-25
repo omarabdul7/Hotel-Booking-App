@@ -172,37 +172,51 @@ app.get("/hotels", (req, res) => {
   });
 });
 app.post("/customers", (req, res) => {
-  let { firstName, middleName, lastName, street, city, postalCode, email, phoneNumber, idType } = req.body;
+  let { firstName, middleName, lastName, street, city, postalCode, email, phoneNumber, idType, password } = req.body;
 
-  // Format phone number
+  // Normalize phone number to a specific format or remove non-numeric characters as needed
   phoneNumber = phoneNumber.replace(/\D/g, ''); // Remove any non-numeric characters
-  if (phoneNumber.length === 10) { // Ensure the phone number is the correct length
+  if (phoneNumber.length === 10) {
     phoneNumber = `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6)}`;
   }
 
-  // Adjust idType value
+  // Adjust ID type value if necessary
   if (idType === 'driverLicense') {
     idType = "Driver's Licence";
   }
-  
-  // Get current date and extract year, month, and day
+
+  // Get current date for registration timestamp
   const currentDate = new Date();
   const registrationYear = currentDate.getFullYear();
-  const registrationMonth = currentDate.getMonth() + 1; // getMonth() returns 0-11, add 1 for 1-12
+  const registrationMonth = currentDate.getMonth() + 1; // getMonth() returns 0-11, need 1-12
   const registrationDay = currentDate.getDate();
 
-  // Added validation and logging for troubleshooting
-  if (!firstName || !lastName || !street || !city || !postalCode || !email || !phoneNumber || !idType) {
+  // Validate required fields are provided
+  if (!firstName || !lastName || !street || !city || !postalCode || !email || !phoneNumber || !idType || !password) {
     console.error('Missing required fields:', req.body);
     return res.status(400).send('Missing required fields');
   }
 
   const query = `
-    INSERT INTO Customer (First_Name, Middle_Name, Last_Name, Street, City, Postal_Code, Email, PhoneNumber, ID_Type, Registration_Day, Registration_Month, Registration_Year)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO Customer (First_Name, Middle_Name, Last_Name, Street, City, Postal_Code, Email, PhoneNumber, ID_Type, Registration_Day, Registration_Month, Registration_Year, Password)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  const queryParams = [firstName, middleName, lastName, street, city, postalCode, email, phoneNumber, idType, registrationDay, registrationMonth, registrationYear];
+  const queryParams = [
+    firstName,
+    middleName,
+    lastName,
+    street,
+    city,
+    postalCode,
+    email,
+    phoneNumber,
+    idType,
+    registrationDay,
+    registrationMonth,
+    registrationYear,
+    password // Directly inserting password without hashing (not recommended)
+  ];
 
   db.query(query, queryParams, (error, results) => {
     if (error) {
@@ -213,6 +227,75 @@ app.post("/customers", (req, res) => {
   });
 });
 
+// Endpoint to verify customer credentials
+app.post("/verify-customer", (req, res) => {
+  const { email, password } = req.body;
+  const query = "SELECT Customer_ID FROM Customer WHERE Email = ? AND Password = ?";
+
+  db.query(query, [email, password], (error, results) => {
+    if (error) {
+      return res.status(500).send('Error verifying customer credentials');
+    }
+    if (results.length > 0) {
+      res.json({ isValid: true, customerID: results[0].Customer_ID });
+    } else {
+      res.status(401).send('Invalid credentials');
+    }
+  });
+});
+
+
+// Endpoint to create a new booking
+app.post("/create-booking", (req, res) => {
+  const {
+    customerID, roomID,
+    Checkin_Year, Checkin_Month, Checkin_Day,
+    Checkout_Year, Checkout_Month, Checkout_Day
+  } = req.body;
+
+  const query = `
+    INSERT INTO Booking (Customer_ID, Room_ID, Checkin_Year, Checkin_Month, Checkin_Day, Checkout_Year, Checkout_Month, Checkout_Day)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(query, [customerID, roomID, Checkin_Year, Checkin_Month, Checkin_Day, Checkout_Year, Checkout_Month, Checkout_Day], (error, results) => {
+    if (error) {
+      return res.status(500).send('Error creating booking');
+    }
+    const bookingID = results.insertId;
+    res.status(201).send({ message: 'Booking created', bookingID });
+  });
+});
+
+
+app.get("/bookings", (req, res) => {
+  const { customerID } = req.query;
+
+  // Ensure customerID is provided
+  if (!customerID) {
+    return res.status(400).send('Customer ID is required');
+  }
+
+  const query = `
+    SELECT Booking.Booking_ID, Booking.Checkin_Year, Booking.Checkin_Month, Booking.Checkin_Day, 
+           Booking.Checkout_Year, Booking.Checkout_Month, Booking.Checkout_Day, Room.Room_ID, 
+           Hotel.Name AS HotelName, Room.Price
+    FROM Booking
+    JOIN Room ON Booking.Room_ID = Room.Room_ID
+    JOIN Hotel ON Room.Hotel_ID = Hotel.Hotel_ID
+    WHERE Booking.Customer_ID = ?
+    ORDER BY Booking.Checkin_Year DESC, Booking.Checkin_Month DESC, Booking.Checkin_Day DESC;
+  `;
+
+  db.query(query, [customerID], (error, results) => {
+    if (error) {
+      console.error('Error fetching bookings:', error);
+      res.status(500).send('Error fetching bookings');
+      return;
+    }
+    res.json(results);
+  });
+});
 
 // Start the server
 app.listen(3001, () => {
