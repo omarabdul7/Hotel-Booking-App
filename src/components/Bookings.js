@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import './SignUpForm.css';
+
 
 function Bookings() {
   const [customer, setCustomer] = useState({ email: '', password: '' });
@@ -49,50 +51,58 @@ function Bookings() {
     .catch(error => console.error('Error fetching bookings:', error));
   };
 
-  return (
-    <div>
+return (
+    <div className="container">
       {!isAuthenticated ? (
-        <form onSubmit={e => {
-          e.preventDefault();
-          authenticateCustomer();
-        }}>
-          <input
-            name="email"
-            value={customer.email}
-            onChange={handleChange}
-            placeholder="Email"
-          />
-          <input
-            type="password"
-            name="password"
-            value={customer.password}
-            onChange={handleChange}
-            placeholder="Password"
-          />
-          <button type="submit">Sign In</button>
-        </form>
+        <>
+          <h2 className="form-title">Sign In</h2>
+          <form onSubmit={e => {
+            e.preventDefault();
+            authenticateCustomer();
+          }}>
+            <input
+              name="email"
+              value={customer.email}
+              onChange={handleChange}
+              placeholder="Email"
+              className="form-input"
+            />
+            <input
+              type="password"
+              name="password"
+              value={customer.password}
+              onChange={handleChange}
+              placeholder="Password"
+              className="form-input"
+            />
+            <div className="button-container">
+              <button type="submit" className="form-button">Sign In</button>
+            </div>
+          </form>
+        </>
       ) : (
-<div>
-  <h2>Your Bookings</h2>
-  {bookings.length > 0 ? (
-    <div>
-      {bookings.map(booking => (
-        <div key={booking.Booking_ID} style={{ margin: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
-          <h3>Hotel: {booking.HotelName}</h3>
-          <p>Room ID: {booking.Room_ID}</p>
-          <p>Price: ${booking.Price}</p>
-          <p>Check-in: {`${booking.Checkin_Day}/${booking.Checkin_Month}/${booking.Checkin_Year}`}</p>
-          <p>Check-out: {`${booking.Checkout_Day}/${booking.Checkout_Month}/${booking.Checkout_Year}`}</p>
+        <div>
+          <h2>Your Bookings</h2>
+          {bookings.length > 0 ? (
+            <div>
+              {bookings.map(booking => (
+                <div key={booking.Booking_ID} style={{ margin: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
+                  <h3>Hotel: {booking.HotelName}</h3>
+                  <p>Room ID: {booking.Room_ID}</p>
+                  <p>Price: ${booking.Price}</p>
+                  <p>Check-in: {`${booking.Checkin_Day}/${booking.Checkin_Month}/${booking.Checkin_Year}`}</p>
+                  <p>Check-out: {`${booking.Checkout_Day}/${booking.Checkout_Month}/${booking.Checkout_Year}`}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>No bookings found.</p>
+          )}
         </div>
-      ))}
-    </div>
-  ) : (
-    <p>No bookings found.</p>
-  )}
-</div>
       )}
     </div>
   );
+
 }
 
 export default Bookings;

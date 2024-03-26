@@ -69,13 +69,14 @@ function BookingComponent() {
     })
     .then(data => {
       console.log('Booking success:', data);
-      navigate('/booking-confirmation', { state: { bookingID: data.bookingID } });
+      alert('Your booking was successfully created.');
+      navigate('/'); // Modify this to navigate back to your search page URL if it's different
     })
     .catch(error => {
       console.error('Error:', error);
       alert('Error processing your booking. Please check your credentials and try again.');
     });
-  };  
+  };
   
 
   if (!selectedRoom) {
