@@ -313,6 +313,57 @@ app.delete("/delete-booking", (req, res) => {
   });
 });
 
+// Endpoint to verify employee credentials
+app.post("/verify-employee", (req, res) => {
+  const { email, password } = req.body;
+  const query = "SELECT Employee_ID, Hotel_ID FROM Employee WHERE Email = ? AND Password = ?";
+
+  db.query(query, [email, password], (error, results) => {
+    if (error) {
+      return res.status(500).send('Error verifying employee credentials');
+    }
+    if (results.length > 0) {
+      res.json({ isValid: true, employeeID: results[0].Employee_ID, hotelID: results[0].Hotel_ID });
+    } else {
+      res.status(401).send('Invalid credentials');
+    }
+  });
+});
+
+
+// Endpoint to fetch rooms based on Hotel_ID
+app.get("/rooms-by-hotel", (req, res) => {
+  const { hotelId } = req.query;
+  db.query("SELECT * FROM Room WHERE Hotel_ID = ?", [hotelId], (error, results) => {
+    if (error) {
+      console.error('Error fetching rooms:', error);
+      res.status(500).send('Error fetching rooms');
+      return;
+    }
+    res.json(results);
+  });
+});
+
+// Endpoint to update room details
+app.post("/update-room", (req, res) => {
+  const { Room_ID, Price, Capacity, Amenities, Sea_View, Mountain_View, Extendable, Damage_Status } = req.body;
+  const query = `
+    UPDATE Room
+    SET Price = ?, Capacity = ?, Amenities = ?, Sea_View = ?, Mountain_View = ?, Extendable = ?, Damage_Status = ?
+    WHERE Room_ID = ?;
+  `;
+  const values = [Price, Capacity, Amenities, Sea_View, Mountain_View, Extendable, Damage_Status, Room_ID];
+
+  db.query(query, values, (error, results) => {
+    if (error) {
+      console.error('Error updating room details:', error);
+      res.status(500).send('Error updating room details');
+      return;
+    }
+    res.send({ message: 'Room details updated successfully' });
+  });
+});
+
 
 // Start the server
 app.listen(3001, () => {
