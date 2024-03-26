@@ -215,7 +215,7 @@ app.post("/customers", (req, res) => {
     registrationDay,
     registrationMonth,
     registrationYear,
-    password // Directly inserting password without hashing (not recommended)
+    password 
   ];
 
   db.query(query, queryParams, (error, results) => {
@@ -296,6 +296,23 @@ app.get("/bookings", (req, res) => {
     res.json(results);
   });
 });
+
+app.delete("/delete-booking", (req, res) => {
+  const { bookingID } = req.query;
+  if (!bookingID) {
+    return res.status(400).send('Booking ID is required');
+  }
+
+  const query = "DELETE FROM Booking WHERE Booking_ID = ?";
+  db.query(query, [bookingID], (error, results) => {
+    if (error) {
+      console.error('Error deleting booking:', error);
+      return res.status(500).send('Error deleting booking');
+    }
+    res.send({ message: 'Booking deleted' });
+  });
+});
+
 
 // Start the server
 app.listen(3001, () => {

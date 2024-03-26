@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import './SignUpForm.css';
 
-
 function Bookings() {
-  const [customer, setCustomer] = useState({ email: '', password: '' });
+  const [customer, setCustomer] = useState({ email: '', password: '', customerID: '' });
   const [bookings, setBookings] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -31,6 +30,10 @@ function Bookings() {
     .then(data => {
       if (data.isValid) {
         setIsAuthenticated(true);
+        setCustomer(prevState => ({
+          ...prevState,
+          customerID: data.customerID
+        }));
         fetchBookings(data.customerID);
       } else {
         alert('Authentication failed. Please check your credentials and try again.');
@@ -42,7 +45,6 @@ function Bookings() {
   };
 
   const fetchBookings = (customerID) => {
-    // Assuming you have an endpoint to fetch bookings by customer ID
     fetch(`http://localhost:3001/bookings?customerID=${customerID}`)
     .then(response => response.json())
     .then(data => {
@@ -51,7 +53,20 @@ function Bookings() {
     .catch(error => console.error('Error fetching bookings:', error));
   };
 
-return (
+  const cancelBooking = (bookingId) => {
+    fetch(`http://localhost:3001/delete-booking?bookingID=${bookingId}`, {
+      method: 'DELETE',
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Failed to cancel booking');
+      fetchBookings(customer.customerID); // Now using the customerID from the state
+    })
+    .catch(error => {
+      console.error('Error canceling booking:', error);
+    });
+  };
+
+  return (
     <div className="container">
       {!isAuthenticated ? (
         <>
@@ -92,6 +107,7 @@ return (
                   <p>Price: ${booking.Price}</p>
                   <p>Check-in: {`${booking.Checkin_Day}/${booking.Checkin_Month}/${booking.Checkin_Year}`}</p>
                   <p>Check-out: {`${booking.Checkout_Day}/${booking.Checkout_Month}/${booking.Checkout_Year}`}</p>
+                  <button onClick={() => cancelBooking(booking.Booking_ID)}>Cancel Booking</button>
                 </div>
               ))}
             </div>
@@ -102,7 +118,6 @@ return (
       )}
     </div>
   );
-
 }
 
 export default Bookings;
