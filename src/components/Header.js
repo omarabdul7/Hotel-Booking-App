@@ -11,8 +11,7 @@ function Header() {
           <li><a href="/bookings">Bookings</a></li>
           <li><a href="/hotel-directory">Hotel Directory</a></li>
           <li><a href="/management">Management</a></li>
-          <li><a href="/contact">Contact</a></li>
-          <li><a href="/signup">Sign Up</a></li> {/* Add this line */}
+          <li><a href="/signup">Sign Up</a></li> 
         </ul>
       </nav>
     </header>
