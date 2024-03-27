@@ -7,10 +7,24 @@ function Management() {
   const [bookings, setBookings] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeView, setActiveView] = useState(''); 
+  const [rental, setRental] = useState({
+    roomId: '',
+    customerId: '',
+    checkInDate: '',
+    checkOutDate: '',
+    cardNumber: '',
+    cvv: '',
+    expiryDate: '',
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEmployee({ ...employee, [name]: value });
+  };
+
+  const handleRentalChange = (e) => {
+    const { name, value } = e.target;
+    setRental({ ...rental, [name]: value });
   };
 
   const authenticateEmployee = () => {
@@ -26,11 +40,13 @@ function Management() {
     .then(data => {
       if (data.isValid) {
         setIsAuthenticated(true);
-        setEmployee({ ...employee, hotelID: data.hotelID, employeeID: data.employeeID }); // Store employeeID here
+        // Assuming data contains employeeID, save it along with other employee details
+        setEmployee({ ...employee, hotelID: data.hotelID, employeeID: data.employeeID });
       } else {
         alert('Authentication failed. Please check your credentials and try again.');
       }
     })
+    
     
     .catch(error => {
       console.error('Authentication error:', error);
@@ -79,6 +95,36 @@ function Management() {
     })
     .catch(error => console.error('Error fetching bookings:', error));
   };
+
+  const createRental = () => {
+    console.log("Creating rental with employee ID: ", employee.employeeID); // Debug: Log the employeeID being used
+    const payload = {
+      ...rental,
+      Employee_ID: employee.employeeID, // This should match the key expected by your backend
+    };
+  
+    console.log("Payload for creating rental: ", payload); // Debug: Log the payload
+  
+  
+  
+    fetch('http://localhost:3001/create-renting', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Failed to create rental');
+      return response.json();
+    })
+    .then(data => {
+      alert('Rental created successfully!');
+      window.location.reload(); 
+    })
+    .catch(error => {
+      console.error('Error creating rental:', error);
+    });
+  };
+  
 
   const transformBooking = (booking) => {
     // Ask for payment details
@@ -154,6 +200,8 @@ function Management() {
         <div>
 <button onClick={fetchRooms}className="form-button">View Rooms</button>
 <button onClick={fetchBookings}className="form-button">View Bookings</button>
+<button onClick={() => setActiveView('createRenting')} className="form-button">Create Renting</button>
+
 
 {activeView === 'rooms' && (
   rooms.length > 0 ? rooms.map((room, index) => (
@@ -209,6 +257,20 @@ function Management() {
   )) : <p>No bookings found.</p>
 )}
 
+
+{activeView === 'createRenting' && (
+            <div>
+              <h2>Create a New Renting</h2>
+              <input name="roomId" value={rental.roomId} onChange={handleRentalChange} placeholder="Room ID" />
+              <input name="customerId" value={rental.customerId} onChange={handleRentalChange} placeholder="Customer ID" />
+              <input name="checkInDate" type="date" value={rental.checkInDate} onChange={handleRentalChange} placeholder="Check-In Date" />
+              <input name="checkOutDate" type="date"a value={rental.checkOutDate} onChange={handleRentalChange} placeholder="Check-Out Date" />
+              <input name="cardNumber" value={rental.cardNumber} onChange={handleRentalChange} placeholder="Card Number" />
+              <input name="cvv" value={rental.cvv} onChange={handleRentalChange} placeholder="CVV" />
+              <input name="expiryDate" value={rental.expiryDate} onChange={handleRentalChange} placeholder="Expiry Date" />
+              <button onClick={createRental}>Submit Rental</button>
+            </div>
+          )}
 
 
         </div>

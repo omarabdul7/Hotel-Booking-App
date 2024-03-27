@@ -419,6 +419,61 @@ app.post("/transform-booking", (req, res) => {
   });
 });
 
+app.post("/create-renting", (req, res) => {
+  const { roomId, Customer_ID, checkInDate, checkOutDate, cardNumber, cvv, expiryDate, Employee_ID} = req.body;
+  
+  // Assuming checkInDate and checkOutDate are in 'YYYY-MM-DD' format
+  const checkInParts = checkInDate.split('-');
+  const checkOutParts = checkOutDate.split('-');
+
+  const checkInYear = checkInParts[0];
+  const checkInMonth = checkInParts[1];
+  const checkInDay = checkInParts[2];
+
+  const checkOutYear = checkOutParts[0];
+  const checkOutMonth = checkOutParts[1];
+  const checkOutDay = checkOutParts[2];
+  
+  // Adjust the INSERT query to use the split date parts
+  const query = `
+    INSERT INTO Renting (Room_ID, Customer_ID, Checkin_Year, Checkin_Month, Checkin_Day, Checkout_Year, Checkout_Month, Checkout_Day, Card_Number, CVV, Expiry_Date, Employee_ID)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const values = [roomId, Customer_ID, checkInYear, checkInMonth, checkInDay, checkOutYear, checkOutMonth, checkOutDay, cardNumber, cvv, expiryDate, Employee_ID];
+
+  db.query(query, values, (error, results) => {
+    if (error) {
+      console.error('Error creating renting:', error);
+      res.status(500).send('Error creating renting');
+      return;
+    }
+    res.send({ message: 'Renting created successfully', rentingID: results.insertId });
+  });
+});
+
+app.post('/employees', (req, res) => {
+  const { hotelID, role, firstName, middleName, lastName, street, city, postalCode, ssn, email, password } = req.body;
+
+  const query = `
+    INSERT INTO Employee (Hotel_ID, Role_ID, First_Name, Middle_Name, Last_Name, Street, City, Postal_Code, SSN, Email, Password)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const values = [hotelID, role, firstName, middleName, lastName, street, city, postalCode, ssn, email, password];
+
+  db.query(query, values, (error, results) => {
+    if (error) {
+      console.error('Error adding new employee:', error);
+      res.status(500).send('Error adding new employee');
+    } else {
+      res.status(201).send({ message: 'New employee created', employeeID: results.insertId });
+    }
+  });
+});
+
+
+
 // Start the server
 app.listen(3001, () => {
   console.log(`Server running on port 3001`);
