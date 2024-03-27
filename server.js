@@ -364,6 +364,60 @@ app.post("/update-room", (req, res) => {
   });
 });
 
+app.get("/bookings-by-hotel", (req, res) => {
+  const { hotelId } = req.query;
+  const query = `
+    SELECT 
+      Booking.Booking_ID,
+      Booking.Checkin_Year, 
+      Booking.Checkin_Month, 
+      Booking.Checkin_Day,
+      Booking.Checkout_Year, 
+      Booking.Checkout_Month, 
+      Booking.Checkout_Day,
+      Room.Room_ID,
+      Customer.Customer_ID,
+      Customer.First_Name,
+      Customer.Last_Name
+    FROM Booking
+    JOIN Room ON Booking.Room_ID = Room.Room_ID
+    JOIN Customer ON Booking.Customer_ID = Customer.Customer_ID
+    WHERE Room.Hotel_ID = ?
+    ORDER BY Booking.Checkin_Year DESC, Booking.Checkin_Month DESC, Booking.Checkin_Day DESC;
+  `;
+
+  db.query(query, [hotelId], (error, results) => {
+    if (error) {
+      console.error('Error fetching bookings:', error);
+      res.status(500).send('Error fetching bookings');
+      return;
+    }
+    res.json(results);
+  });
+});
+
+
+// Endpoint to transform a booking into a renting record
+app.post("/transform-booking", (req, res) => {
+  const { Booking_ID, Room_ID, Customer_ID, Employee_ID, Checkin_Year, Checkin_Month, Checkin_Day, Checkout_Year, Checkout_Month, Checkout_Day, Card_Number, CVV, Expiry_Date } = req.body;
+
+  // SQL to insert into Renting table (adjust according to your table structure)
+  const query = `
+    INSERT INTO Renting (Room_ID, Booking_ID, Customer_ID, Employee_ID, Checkin_Year, Checkin_Month, Checkin_Day, Checkout_Year, Checkout_Month, Checkout_Day, Card_Number, CVV, Expiry_Date)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const values = [Room_ID, Booking_ID, Customer_ID, Employee_ID, Checkin_Year, Checkin_Month, Checkin_Day, Checkout_Year, Checkout_Month, Checkout_Day, Card_Number, CVV, Expiry_Date];
+
+  db.query(query, values, (error, results) => {
+    if (error) {
+      console.error('Error transforming booking:', error);
+      res.status(500).send('Error transforming booking');
+      return;
+    }
+    res.send({ message: 'Booking transformed successfully', rentingID: results.insertId });
+  });
+});
 
 // Start the server
 app.listen(3001, () => {
