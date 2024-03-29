@@ -16,6 +16,17 @@ function Management() {
     cvv: '',
     expiryDate: '',
   });
+  const [newRoom, setNewRoom] = useState({
+    hotelId: '', // Assuming rooms are linked to hotels
+    price: '',
+    capacity: '',
+    amenities: '',
+    seaView: false,
+    mountainView: false,
+    extendable: false,
+    damageStatus: false,
+  });
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -121,6 +132,43 @@ function Management() {
     });
   };
   
+  const createRoom = () => {
+    // Add the hotelId to the newRoom data before sending
+    const payload = { ...newRoom, hotelId: employee.hotelID };
+    
+    fetch('http://localhost:3001/create-room', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Failed to create room');
+      return response.json();
+    })
+    .then(data => {
+      alert('Room created successfully!');
+      // Optionally reset the form or refresh data
+    })
+    .catch(error => {
+      console.error('Error creating room:', error);
+    });
+  };
+
+  const deleteRoom = (roomId) => {
+    fetch(`http://localhost:3001/delete-room?roomId=${roomId}`, {
+      method: 'DELETE',
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Failed to delete room');
+      alert('Room deleted successfully!');
+      // Optionally, refresh the room list
+      fetchRooms(); // Assuming you have a function to fetch rooms
+    })
+    .catch(error => {
+      console.error('Error deleting room:', error);
+    });
+  };
+  
 
   const transformBooking = (booking) => {
     // Ask for payment details
@@ -196,6 +244,81 @@ function Management() {
 <button onClick={fetchRooms}className="form-button">View Rooms</button>
 <button onClick={fetchBookings}className="form-button">View Bookings</button>
 <button onClick={() => setActiveView('createRenting')} className="form-button">Create Renting</button>
+<button onClick={() => setActiveView('createRoom')} className="form-button">Create Room</button>
+<button onClick={() => setActiveView('deleteRoom')} className="form-button">Delete Room</button>
+
+{activeView === 'deleteRoom' && (
+  rooms.length > 0 ? rooms.map((room, index) => (
+    <div key={room.Room_ID} className="room-delete-container">
+      <p>Room ID: {room.Room_ID} - {room.Price} - {room.Capacity}</p>
+      <button onClick={() => deleteRoom(room.Room_ID)}>Delete</button>
+    </div>
+  )) : <p>No rooms available to delete.</p>
+)}
+
+{activeView === 'createRoom' && (
+  <div>
+    <h2>Create a New Room</h2>
+    <input
+      name="price"
+      type="number"
+      value={newRoom.price}
+      onChange={(e) => setNewRoom({ ...newRoom, price: e.target.value })}
+      placeholder="Price"
+    />
+    <input
+      name="capacity"
+      type="number"
+      value={newRoom.capacity}
+      onChange={(e) => setNewRoom({ ...newRoom, capacity: e.target.value })}
+      placeholder="Capacity"
+    />
+    <input
+      name="amenities"
+      value={newRoom.amenities}
+      onChange={(e) => setNewRoom({ ...newRoom, amenities: e.target.value })}
+      placeholder="Amenities"
+    />
+    <label>
+      Sea View:
+      <input
+        name="seaView"
+        type="checkbox"
+        checked={newRoom.seaView}
+        onChange={(e) => setNewRoom({ ...newRoom, seaView: e.target.checked })}
+      />
+    </label>
+    <label>
+      Mountain View:
+      <input
+        name="mountainView"
+        type="checkbox"
+        checked={newRoom.mountainView}
+        onChange={(e) => setNewRoom({ ...newRoom, mountainView: e.target.checked })}
+      />
+    </label>
+    <label>
+      Extendable:
+      <input
+        name="extendable"
+        type="checkbox"
+        checked={newRoom.extendable}
+        onChange={(e) => setNewRoom({ ...newRoom, extendable: e.target.checked })}
+      />
+    </label>
+    <label>
+      Damage Status:
+      <input
+        name="damageStatus"
+        type="checkbox"
+        checked={newRoom.damageStatus}
+        onChange={(e) => setNewRoom({ ...newRoom, damageStatus: e.target.checked })}
+      />
+    </label>
+    <button onClick={createRoom}>Create Room</button>
+  </div>
+)}
+
 
 
 {activeView === 'rooms' && (

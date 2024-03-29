@@ -463,7 +463,39 @@ app.post('/employees', (req, res) => {
   });
 });
 
+app.post("/create-room", (req, res) => {
+  const { hotelId, price, capacity, amenities, seaView, mountainView, extendable, damageStatus } = req.body;
+  
+  const query = `
+    INSERT INTO Room (Hotel_ID, Price, Capacity, Amenities, Sea_View, Mountain_View, Extendable, Damage_Status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `;
 
+  db.query(query, [hotelId, price, capacity, amenities, seaView, mountainView, extendable, damageStatus], (error, results) => {
+    if (error) {
+      console.error('Error creating room:', error);
+      res.status(500).send('Error creating room');
+      return;
+    }
+    res.status(201).send({ message: 'Room created successfully', roomId: results.insertId });
+  });
+});
+
+app.delete("/delete-room", (req, res) => {
+  const { roomId } = req.query;
+  if (!roomId) {
+    return res.status(400).send('Room ID is required');
+  }
+
+  const query = "DELETE FROM Room WHERE Room_ID = ?";
+  db.query(query, [roomId], (error, results) => {
+    if (error) {
+      console.error('Error deleting room:', error);
+      return res.status(500).send('Error deleting room');
+    }
+    res.send({ message: 'Room deleted successfully' });
+  });
+});
 
 // Start the server
 app.listen(3001, () => {
