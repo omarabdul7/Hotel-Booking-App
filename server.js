@@ -107,26 +107,9 @@ app.get("/cities", (req, res) => {
   });
 });
 
+// View 1:
 app.get("/available-rooms-per-area", (req, res) => {
-  const { sort = 'Country', order = 'ASC' } = req.query;
-  const validSortColumns = ['Country', 'City', 'AvailableRooms'];
-  const sortOrder = order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-
-  if (!validSortColumns.includes(sort)) {
-    return res.status(400).send('Invalid sort parameter');
-  }
-
-  const query = `
-    SELECT h.Country, h.City, COUNT(r.Room_ID) AS AvailableRooms
-    FROM Room r
-    JOIN Hotel h ON r.Hotel_ID = h.Hotel_ID
-    LEFT JOIN Booking b ON r.Room_ID = b.Room_ID
-    WHERE b.Room_ID IS NULL
-    OR b.Checkout_Day < DAY(CURDATE())
-    OR (b.Checkout_Month < MONTH(CURDATE()) AND b.Checkout_Year <= YEAR(CURDATE()))
-    OR (b.Checkout_Year < YEAR(CURDATE()))
-    GROUP BY h.Country, h.City
-    ORDER BY ${sort} ${sortOrder};`;
+  const query = `SELECT * FROM AvailableRoomsPerArea;`;
 
   db.query(query, (error, results) => {
     if (error) {
@@ -139,16 +122,16 @@ app.get("/available-rooms-per-area", (req, res) => {
 });
 
 
-// View 2: Aggregated Capacity of All Rooms of a Specific Hotel
+
+
+// View 2: 
 app.get("/hotel-capacity", (req, res) => {
   const { hotelId } = req.query;
-  const query = `
-    SELECT Hotel.Name, SUM(Room.Capacity) AS TotalCapacity
-    FROM Room
-    JOIN Hotel ON Room.Hotel_ID = Hotel.Hotel_ID
-    WHERE Hotel.Hotel_ID = ?
-    GROUP BY Hotel.Hotel_ID;
-  `;
+  if (!hotelId) {
+    return res.status(400).send('Hotel ID is required');
+  }
+
+  const query = `SELECT * FROM HotelTotalCapacity WHERE Hotel_ID = ?;`;
 
   db.query(query, [hotelId], (error, results) => {
     if (error) {
@@ -156,9 +139,17 @@ app.get("/hotel-capacity", (req, res) => {
       res.status(500).send('Error fetching hotel capacity');
       return;
     }
-    res.json(results[0] || { TotalCapacity: 0 });
+    // Assuming the view might not return a result for every hotel, check for empty results
+    if (results.length > 0) {
+      res.json(results[0]);
+    } else {
+      res.json({ TotalCapacity: 0 });
+    }
   });
 });
+
+
+
 
 // Endpoint to fetch all hotels
 app.get("/hotels", (req, res) => {
