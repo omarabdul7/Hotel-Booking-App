@@ -8,6 +8,7 @@ function Management() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [rentings, setRentings] = useState([]);
   const [activeView, setActiveView] = useState(''); 
+  const [employees, setEmployees] = useState([]);
   
   const [rental, setRental] = useState({
     roomId: '',
@@ -237,6 +238,50 @@ function Management() {
     });
   };
   
+    const fetchEmployees = () => {
+      // Include authentication headers if needed
+      const headers = new Headers({
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer YOUR_AUTH_TOKEN', // Adjust according to your auth mechanism
+      });
+    
+      fetch(`http://localhost:3001/employees-by-hotel?hotelId=${employee.hotelID}`, { headers })
+        .then(response => response.json())
+        .then(data => {
+          setEmployees(data);
+          setActiveView('deleteEmployee');
+        })
+        .catch(error => console.error('Error fetching employees:', error));
+    };
+    
+
+    const deleteEmployee = (employeeId) => {
+      fetch(`http://localhost:3001/delete-employee?employeeId=${employeeId}`, {
+        method: 'DELETE',
+      })
+      .then(response => {
+        if (!response.ok) {
+          // If server responds with a status code outside the range 200-299, throw an error
+          throw new Error('Cannot delete last manager');
+        }
+        return response.json(); // Parse JSON body of the response (optional depending on your server response)
+      })
+      .then(() => {
+        alert('Employee deleted successfully!');
+        fetchEmployees(); // Refresh the employee list
+      })
+      .catch(error => {
+        console.error('Error deleting employee:', error);
+        alert(error.message); // Display a relevant error message to the user
+      });
+    };
+    
+    // Include the fetchEmployees function definition here as you already have in your existing code.
+    // Ensure it updates the state correctly with the fetched employee list.
+    
+
+
+
   return (
     <div className="container">
       {!isAuthenticated ? (
@@ -274,6 +319,17 @@ function Management() {
 <button onClick={() => setActiveView('createRoom')} className="form-button">Create Room</button>
 <button onClick={() => setActiveView('deleteRoom')} className="form-button">Delete Room</button>
 <button onClick={fetchRentings} className="form-button">View Rentings</button>
+<button onClick={fetchEmployees} className="form-button">Delete Employee</button>
+
+{activeView === 'deleteEmployee' && (
+  employees.length > 0 ? employees.map((employee, index) => (
+    <div key={employee.Employee_ID} className="employee-delete-container">
+      <p>Employee ID: {employee.Employee_ID} - {employee.First_Name} {employee.Last_Name}</p>
+      <button onClick={() => deleteEmployee(employee.Employee_ID)}>Delete</button>
+    </div>
+  )) : <p>No employees found.</p>
+)}
+
 
 {activeView === 'rentings' && (
   rentings.length > 0 ? rentings.map((renting, index) => (

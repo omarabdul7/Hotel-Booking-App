@@ -559,6 +559,43 @@ app.post("/archive-renting", (req, res) => {
   });
 });
 
+app.delete("/delete-employee", (req, res) => {
+  const { employeeId } = req.query;
+  if (!employeeId) {
+    return res.status(400).send('Employee ID is required');
+  }
+
+  const query = "DELETE FROM Employee WHERE Employee_ID = ?";
+  db.query(query, [employeeId], (error, results) => {
+    if (error) {
+      console.error('Error deleting employee:', error);
+      return res.status(500).send('Error deleting employee');
+    }
+    if (results.affectedRows === 0) {
+      // No rows affected means no employee was found/deleted
+      return res.status(404).send('Employee not found');
+    }
+    res.send({ message: 'Employee deleted successfully' });
+  });
+});
+
+
+
+app.get("/employees-by-hotel", (req, res) => {
+  const { hotelId } = req.query;
+  if (!hotelId) {
+    return res.status(400).send('Hotel ID is required');
+  }
+
+  const query = "SELECT Employee_ID, First_Name, Last_Name, Role_ID, Email FROM Employee WHERE Hotel_ID = ?";
+  db.query(query, [hotelId], (error, results) => {
+    if (error) {
+      console.error('Error fetching employees:', error);
+      return res.status(500).send('Error fetching employees');
+    }
+    res.json(results);
+  });
+});
 
 // Start the server
 app.listen(3001, () => {

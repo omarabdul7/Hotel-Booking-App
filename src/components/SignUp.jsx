@@ -118,9 +118,9 @@ function SignUp() {
   
   <select className="form-input" name="role" value={employeeFormData.role} onChange={handleEmployeeChange} required>
     <option value="">Select Role</option>
-    <option value="1">Role 1</option>
-    <option value="2">Role 2</option>
-    <option value="3">Role 3</option>
+    <option value="1">Manager</option>
+    <option value="2">Reception</option>
+    <option value="3">Housekeeper</option>
   </select>
   
   <input className="form-input" type="text" name="firstName" placeholder="First Name" value={employeeFormData.firstName} onChange={handleEmployeeChange} required />
