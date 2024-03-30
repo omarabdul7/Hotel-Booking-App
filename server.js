@@ -20,6 +20,7 @@ db.connect(error => {
   console.log("Successfully connected to the database.");
 });
 
+
 // Middleware
 app.use(cors());
 app.use(express.json()); // for parsing application/json
@@ -496,6 +497,68 @@ app.delete("/delete-room", (req, res) => {
     res.send({ message: 'Room deleted successfully' });
   });
 });
+
+
+app.get("/rentings", (req, res) => {
+  // Assuming you have a table named `Renting` where all renting records are stored.
+  const query = `
+    SELECT Renting.*, Room.Room_ID, Customer.First_Name, Customer.Last_Name 
+    FROM Renting
+    JOIN Room ON Renting.Room_ID = Room.Room_ID
+    JOIN Customer ON Renting.Customer_ID = Customer.Customer_ID
+    ORDER BY Renting.Checkin_Year DESC, Renting.Checkin_Month DESC, Renting.Checkin_Day DESC;
+  `;
+
+  db.query(query, (error, results) => {
+    if (error) {
+      console.error('Error fetching rentings:', error);
+      res.status(500).send('Error fetching rentings');
+      return;
+    }
+    res.json(results);
+  });
+});
+
+app.post("/archive-renting", (req, res) => {
+  const { rentingId } = req.body; // Assuming the renting ID is sent in the request body
+
+  // Step 1: Fetch the renting record to be archived
+  const fetchQuery = "SELECT * FROM Renting WHERE Renting_ID = ?";
+  
+  db.query(fetchQuery, [rentingId], (fetchError, fetchResults) => {
+    if (fetchError || fetchResults.length === 0) {
+      console.error('Error fetching renting for archive:', fetchError);
+      res.status(500).send('Error fetching renting for archive');
+      return;
+    }
+    
+    const renting = fetchResults[0];
+    // Step 2: Insert the record into the Archive table
+    const archiveQuery = "INSERT INTO Archive (Checkin_Year, Checkin_Month, Checkin_Day, Checkout_Year, Checkout_Month, Checkout_Day, Employee_ID, Room_ID, Customer_ID) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+    db.query(archiveQuery, [renting.Checkin_Year, renting.Checkin_Month, renting.Checkin_Day, renting.Checkout_Year, renting.Checkout_Month, renting.Checkout_Day, renting.Employee_ID, renting.Room_ID, renting.Customer_ID], (archiveError, archiveResults) => {
+      if (archiveError) {
+        console.error('Error archiving renting:', archiveError);
+        res.status(500).send('Error archiving renting');
+        return;
+      }
+      
+      // Step 3: Delete the original renting record
+      const deleteQuery = "DELETE FROM Renting WHERE Renting_ID = ?";
+      
+      db.query(deleteQuery, [rentingId], (deleteError, deleteResults) => {
+        if (deleteError) {
+          console.error('Error deleting original renting:', deleteError);
+          res.status(500).send('Error deleting original renting');
+          return;
+        }
+        
+        res.send({ message: 'Renting archived successfully' });
+      });
+    });
+  });
+});
+
 
 // Start the server
 app.listen(3001, () => {

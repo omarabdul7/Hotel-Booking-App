@@ -6,7 +6,9 @@ function Management() {
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [rentings, setRentings] = useState([]);
   const [activeView, setActiveView] = useState(''); 
+  
   const [rental, setRental] = useState({
     roomId: '',
     customerId: '',
@@ -209,7 +211,32 @@ function Management() {
     });
   };
   
-
+  const fetchRentings = () => {
+    fetch(`http://localhost:3001/rentings`)
+      .then(response => response.json())
+      .then(data => {
+        setRentings(data);
+        setActiveView('rentings');
+      })
+      .catch(error => console.error('Error fetching rentings:', error));
+  };
+  
+  const archiveRenting = (rentingId) => {
+    fetch('http://localhost:3001/archive-renting', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rentingId }),
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Failed to archive renting');
+      alert('Renting archived successfully!');
+      fetchRentings(); // Refresh the rentings list to reflect the removal
+    })
+    .catch(error => {
+      console.error('Error archiving renting:', error);
+    });
+  };
+  
   return (
     <div className="container">
       {!isAuthenticated ? (
@@ -246,6 +273,23 @@ function Management() {
 <button onClick={() => setActiveView('createRenting')} className="form-button">Create Renting</button>
 <button onClick={() => setActiveView('createRoom')} className="form-button">Create Room</button>
 <button onClick={() => setActiveView('deleteRoom')} className="form-button">Delete Room</button>
+<button onClick={fetchRentings} className="form-button">View Rentings</button>
+
+{activeView === 'rentings' && (
+  rentings.length > 0 ? rentings.map((renting, index) => (
+    <div key={renting.Renting_ID}>
+      <p>Renting ID: {renting.Renting_ID}</p>
+      <p>Room ID: {renting.Room_ID}</p>
+      <p>Customer ID: {renting.Customer_ID}</p>
+      <p>Check-in Date: {`${renting.Checkin_Day}/${renting.Checkin_Month}/${renting.Checkin_Year}`}</p>
+      <p>Check-out Date: {`${renting.Checkout_Day}/${renting.Checkout_Month}/${renting.Checkout_Year}`}</p>
+      <button onClick={() => archiveRenting(renting.Renting_ID)}>Archive</button>
+      {index < rentings.length - 1 && <div className="booking-divider"></div>}
+    </div>
+  )) : <p>No rentings found.</p>
+)}
+
+
 
 {activeView === 'deleteRoom' && (
   rooms.length > 0 ? rooms.map((room, index) => (
