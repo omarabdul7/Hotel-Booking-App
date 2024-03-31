@@ -23,7 +23,7 @@ db.connect(error => {
 
 // Middleware
 app.use(cors());
-app.use(express.json()); // for parsing application/json
+app.use(express.json()); 
 
 // Test endpoint
 app.get('/', (req, res) => {

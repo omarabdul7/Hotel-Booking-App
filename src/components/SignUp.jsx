@@ -23,8 +23,27 @@ function SignUp() {
     }));
   };
 
+  const validateEmail = (email) => {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+  };
+
+  const validatePhoneNumber = (number) => {
+    return number.length === 9 && /^\d+$/.test(number);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Validate email and phone number
+    if (!validateEmail(formData.email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+    if (!validatePhoneNumber(formData.phoneNumber)) {
+      alert('Phone number must be exactly 9 digits.');
+      return;
+    }
+
     const url = 'http://localhost:3001/customers';
 
     fetch(url, {
@@ -38,7 +57,7 @@ function SignUp() {
     .then(data => {
       console.log('Success:', data);
       alert('Form submitted! Check the console for the confirmation.');
-      window.location.reload(); 
+      window.location.reload();
     })
     .catch((error) => {
       console.error('Error:', error);
@@ -50,7 +69,7 @@ function SignUp() {
     <div className="container">
       <form onSubmit={handleSubmit}>
         <h2 className="form-title">Customer Sign Up</h2>
-        
+
         <input className="form-input" type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} required />
         
         <input className="form-input" type="text" name="middleName" placeholder="Middle Name (Optional)" value={formData.middleName} onChange={handleChange} />
@@ -85,4 +104,3 @@ function SignUp() {
 }
 
 export default SignUp;
-
