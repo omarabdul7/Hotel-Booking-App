@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import './SignUpForm.css';
 
 function Management() {
-  const [employee, setEmployee] = useState({ email: '', password: '', hotelID: '' });
+const [employee, setEmployee] = useState({ email: '', password: '', hotelID: '', roleID: '' });
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [rentings, setRentings] = useState([]);
   const [activeView, setActiveView] = useState(''); 
   const [employees, setEmployees] = useState([]);
+
   
   const [rental, setRental] = useState({
     roomId: '',
@@ -54,13 +55,12 @@ function Management() {
     .then(data => {
       if (data.isValid) {
         setIsAuthenticated(true);
-        // Assuming data contains employeeID, save it along with other employee details
-        setEmployee({ ...employee, hotelID: data.hotelID, employeeID: data.employeeID });
+        // Set employee details in state, including role_ID
+        setEmployee({ ...employee, hotelID: data.hotelID, employeeID: data.employeeID, role_ID: data.role_ID });
       } else {
         alert('Authentication failed. Please check your credentials and try again.');
       }
     })
-    
     
     .catch(error => {
       console.error('Authentication error:', error);
@@ -111,11 +111,15 @@ function Management() {
 
   const createRental = () => {
     const payload = {
-      ...rental,
-      Employee_ID: employee.employeeID, 
+      roomId: rental.roomId,
+      Customer_ID: rental.customerId,
+      checkInDate: rental.checkInDate,
+      checkOutDate: rental.checkOutDate,
+      cardNumber: rental.cardNumber,
+      cvv: rental.cvv,
+      expiryDate: rental.expiryDate,
+      Employee_ID: employee.employeeID, // Make sure this matches the key expected by your backend
     };
-    
-  
   
     fetch('http://localhost:3001/create-renting', {
       method: 'POST',
@@ -136,6 +140,12 @@ function Management() {
   };
   
   const createRoom = () => {
+    // Check if the room price is positive
+    if (newRoom.price <= 0) {
+      alert('Room price must be a positive number.');
+      return; // Stop the function if the price is not valid
+    }
+  
     // Add the hotelId to the newRoom data before sending
     const payload = { ...newRoom, hotelId: employee.hotelID };
     
@@ -156,6 +166,7 @@ function Management() {
       console.error('Error creating room:', error);
     });
   };
+  
 
   const deleteRoom = (roomId) => {
     fetch(`http://localhost:3001/delete-room?roomId=${roomId}`, {
@@ -174,43 +185,56 @@ function Management() {
   
 
   const transformBooking = (booking) => {
-    // Ask for payment details
+    // Gather payment information (assuming this part remains unchanged)
     const cardNumber = prompt("Enter Card Number:");
     const cvv = prompt("Enter CVV:");
     const expiryDate = prompt("Enter Expiry Date (MM/YY):");
-  
-    // Check if all fields are filled
+
+    if (cvv.length !== 3) {
+      alert("CVV must be exactly 3 characters long.");
+      return; // Stop the execution if the CVV is not 3 characters
+    }
+
+    // Proceed if all fields are correctly filled
     if (!cardNumber || !cvv || !expiryDate) {
-      alert("Payment information is required.");
+      alert("All payment information is required.");
       return;
     }
-  
-    // Create payload including booking details and payment information
+
+    // Construct payload including the booking details and payment information
     const payload = {
-      ...booking,
+      Booking_ID: booking.Booking_ID, // Ensure this matches exactly with your backend expectations
+      Room_ID: booking.Room_ID,
+      Customer_ID: booking.Customer_ID,
+      Employee_ID: employee.employeeID, // Assuming this is correctly set from your employee state
+      Checkin_Year: booking.Checkin_Year,
+      Checkin_Month: booking.Checkin_Month,
+      Checkin_Day: booking.Checkin_Day,
+      Checkout_Year: booking.Checkout_Year,
+      Checkout_Month: booking.Checkout_Month,
+      Checkout_Day: booking.Checkout_Day,
       Card_Number: cardNumber,
       CVV: cvv,
       Expiry_Date: expiryDate,
-      Employee_ID: employee.employeeID // Make sure this is stored in your state
     };
-  
-    // Send the data to the backend for processing
+
     fetch('http://localhost:3001/transform-booking', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
     .then(response => {
-      if (!response.ok) throw new Error('Failed to transform booking');
+      if (!response.ok) throw new Error('Failed to transform booking into renting');
       return response.json();
     })
     .then(data => {
-      alert('Booking transformed successfully!');
+      alert('Booking transformed into renting successfully!');
     })
     .catch(error => {
-      console.error('Error transforming booking:', error);
+      console.error('Error transforming booking into renting:', error);
     });
-  };
+};
+
   
   const fetchRentings = () => {
     fetch(`http://localhost:3001/rentings`)
@@ -276,10 +300,6 @@ function Management() {
       });
     };
     
-    // Include the fetchEmployees function definition here as you already have in your existing code.
-    // Ensure it updates the state correctly with the fetched employee list.
-    
-
 
 
   return (
@@ -320,6 +340,7 @@ function Management() {
 <button onClick={() => setActiveView('deleteRoom')} className="form-button">Delete Room</button>
 <button onClick={fetchRentings} className="form-button">View Rentings</button>
 <button onClick={fetchEmployees} className="form-button">Delete Employee</button>
+
 
 {activeView === 'deleteEmployee' && (
   employees.length > 0 ? employees.map((employee, index) => (

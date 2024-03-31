@@ -8,6 +8,7 @@ import HotelDirectory from './components/HotelDirectory';
 import Management from './components/Management';
 import SignUp from './components/SignUp'; 
 import BookingComponent from './components/BookingComponent'; 
+import EmployeeSignUp from './components/EmployeeSignUp';
 import './App.css';
 
 function App() {
@@ -24,6 +25,8 @@ function App() {
             <Route path="/management" element={<Management />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/book-room/:roomId" element={<BookingComponent />} /> 
+            <Route path="/employeesignup" element={<EmployeeSignUp />} />
+
           </Routes>
         </main>
       </div>

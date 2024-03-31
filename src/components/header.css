@@ -30,3 +30,27 @@ header {
     width: 100%;
   }
   
+  /* General button styling */
+.role-switch button {
+  background-color: #007bff; /* Blue background */
+  color: white; /* White text */
+  border: none; /* No border */
+  padding: 10px 20px; /* Padding around text */
+  margin: 5px; /* Margin around buttons */
+  border-radius: 5px; /* Rounded corners */
+  cursor: pointer; /* Cursor changes to pointer on hover */
+  transition: background-color 0.3s, transform 0.2s; /* Smooth transition for background color and transform */
+  font-size: 16px; /* Font size */
+}
+
+/* Button hover effect */
+.role-switch button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+  transform: scale(1.05); /* Slightly larger on hover */
+}
+
+/* Active role button styling */
+.role-switch button.active {
+  background-color: #d9d8d3; /* Yellow background for active role */
+  color: black; /* Black text for active role */
+}
