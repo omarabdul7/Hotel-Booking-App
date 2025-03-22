@@ -1,70 +1,89 @@
-# Getting Started with Create React App
+# Hotel Booking App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack application for hotel booking management, allowing users to search for available rooms, make bookings, and hotel staff to manage reservations.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **User Authentication**: Sign up and login functionality for customers and hotel employees
+- **Room Search**: Filter available rooms by check-in/check-out dates, capacity, hotel rating, country, and city
+- **Booking Management**: Make, view, and manage room bookings
+- **Hotel Directory**: Browse through the list of hotels in the system
+- **Admin Dashboard**: Management interface for hotel administrators
+- **Responsive Design**: Modern UI accessible on different devices
 
-### `npm start`
+## Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Frontend
+- React.js
+- React Router for navigation
+- CSS for styling
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Backend
+- Node.js
+- Express.js
+- MySQL for database
 
-### `npm test`
+## Database Structure
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+The application uses a MySQL database with tables including:
+- Hotel (Hotel_ID, Name, Street, City, Country, Hotel_Category)
+- Room (Room_ID, Hotel_ID, Price, Amenities, Capacity, Sea_View, Mountain_View, Extendable, Damage_Status)
+- Booking (with check-in and check-out details)
+- Plus other tables for users, employees, etc.
 
-### `npm run build`
+## Setup Instructions
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Prerequisites
+- Node.js and npm installed
+- MySQL installed and running
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Database Setup
+1. Create a MySQL database named `hotel_database`
+2. Configure the database connection in `server.js` with your credentials:
+   ```js
+   const db = mysql.createConnection({
+     host: 'localhost',
+     user: 'your_username',
+     password: 'your_password',
+     database: 'hotel_database'
+   });
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
 
-### Code Splitting
+## API Endpoints
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- `GET /search`: Search available rooms with filtering options
+- `GET /countries`: Get list of available countries
+- `GET /cities`: Get list of cities for a selected country
+- `GET /available-rooms-per-area`: Get statistics on room availability by area
+- `GET /hotel-capacity`: Get capacity information for a specified hotel
+- Plus other endpoints for bookings, authentication, etc.
 
-### Analyzing the Bundle Size
+## Usage
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### For Customers
+1. Browse the home page to see featured hotels
+2. Use the search page to find available rooms based on your criteria
+3. Select a room to book and complete the booking process
+4. View and manage your bookings in the bookings section
 
-### Making a Progressive Web App
+### For Hotel Staff
+1. Log in through the employee portal
+2. Access the management dashboard
+3. View and manage room bookings
+4. Update room details and availability
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
 
-### Advanced Configuration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
 
-### Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
 
-### `npm run build` fails to minify
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
